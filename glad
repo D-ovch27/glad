@@ -1,0 +1,228 @@
+MainWindows
+<Grid Margin="0,-84,-0.4,-59.4" Background="#FF8DA08D">
+       
+        <Label x:Name="authorizationLabel" Content="Авторизация" HorizontalAlignment="Left" Margin="267,40,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.475,0.028" Width="205" Height="52" FontSize="28" FontStyle="Normal" FontWeight="Bold" Foreground="Black" FontFamily="Tw Cen MT Condensed Extra Bold">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="0.622"/>
+                    <TranslateTransform X="0.242" Y="-0.054"/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
+        <Label x:Name="passwordLabel" Content="Пароль" HorizontalAlignment="Left" Margin="112,227,0,0" VerticalAlignment="Top" Height="42" Width="135" FontSize="24" FontStyle="Italic" RenderTransformOrigin="0.503,0.743"/>
+        <Label x:Name="loginLabel" Content="Логин" HorizontalAlignment="Left" Margin="112,149,0,0" VerticalAlignment="Top" FontSize="24" FontStyle="Italic" Foreground="#FF0B0B0C"/>
+        <TextBox x:Name="loginTextBox" HorizontalAlignment="Left" Margin="331,141,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="317" Height="50" FontSize="20"/>
+        <TextBox x:Name="passwordTextBox" HorizontalAlignment="Left" Margin="330,221,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="318" Height="50" FontSize="20"/>
+        <CheckBox x:Name="showPassword" Content="Проверка пароля" HorizontalAlignment="Left" Margin="331,274,0,0" VerticalAlignment="Top" Height="27" Width="317" FontSize="18"/>
+        <Button x:Name="refreshButton" Content="" HorizontalAlignment="Left" Margin="112,389,0,0" VerticalAlignment="Top" Width="203" Height="130"  Foreground="{x:Null}" BorderBrush="{x:Null}">
+            <Button.Background>
+                <ImageBrush ImageSource="cap.jpg"/>
+            </Button.Background>
+        </Button>
+        <TextBox x:Name="captchaGenTextBox" HorizontalAlignment="Left" Margin="412,389,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="208" Height="50" FontSize="22" />
+
+        <TextBox x:Name="captchaTextBox" HorizontalAlignment="Left" Margin="412,469,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="208" Height="50" FontSize="22"/>
+        <Button x:Name="LoginButton" Content="Войти" HorizontalAlignment="Center" Margin="262,552,253,0" VerticalAlignment="Top" Height="47" Width="215" FontSize="22" FontStyle="Italic" FontWeight="Normal" Click="loginButton_Click_1"/>
+        <Label x:Name="captchaLabel" Content="Нажмите для проверки на робота" HorizontalAlignment="Left" Height="34" Margin="225,331,0,0" VerticalAlignment="Top" Width="340" FontSize="20"/>
+        <Label x:Name="blockLabel" Content="" HorizontalAlignment="Left" Margin="170,306,0,0" VerticalAlignment="Top" Width="450" Height="25" Foreground="#FFE8FF00" FontFamily="Times New Roman" FontSize="28"/>
+        <PasswordBox x:Name="passwordBox" HorizontalAlignment="Left" Margin="330,219,0,0" VerticalAlignment="Top" Height="50" Width="316" Background="{x:Null}" FontFamily="Times New Roman" Foreground="Black" FontSize="18"/>
+
+
+    </Grid>
+cs
+public partial class MainWindow : Window
+    {
+        DispatcherTimer timer = new DispatcherTimer();
+        public MainWindow()
+        {
+            InitializeComponent();
+            timer.Interval = new TimeSpan(0, 0, 1);
+            timer.Tick += timer_Tick;
+
+            CaptchaGenerator();
+        }
+        int intrerv = 10;
+        void timer_Tick(object sender, EventArgs e)
+        {
+            intrerv--;
+            if (intrerv == 0)
+            {
+                blockLabel.Visibility = Visibility.Hidden;
+                authorizationLabel.Visibility = Visibility.Visible;
+                loginTextBox.Visibility = Visibility.Visible;
+                passwordBox.Visibility = Visibility.Visible;
+                showPassword.Visibility = Visibility.Visible;
+                //passwordTextBox.Visibility = Visibility.Visible;
+                captchaGenTextBox.Visibility = Visibility.Visible;
+                captchaTextBox.Visibility = Visibility.Visible;
+                refreshButton.Visibility = Visibility.Visible;
+                LoginButton.Visibility = Visibility.Visible;
+                loginLabel.Visibility = Visibility.Visible;
+                passwordLabel.Visibility = Visibility.Visible;
+                captchaLabel.Visibility = Visibility.Visible;
+
+                timer.Stop();
+                intrerv = 10;
+            }
+
+            blockLabel.Content = "Блокировка авторизации " + intrerv.ToString() + " секунд";
+        }
+        void CaptchaGenerator()
+        {
+            char[] chars = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789".ToCharArray();
+            string randomString = "";
+            Random ran = new Random();
+            for (int i = 0; i < 5; i++)
+            {
+                randomString += chars[ran.Next(0, chars.Length)];
+            }
+            captchaGenTextBox.Text = randomString;
+        }
+        private void refreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            String allowchar = "";
+            allowchar += "1,2,3,4,5,6,7,8,9,0";
+            char[] a = { ',' };
+            String[] ar = allowchar.Split(a);
+            String pwd = "";
+            string temp = "";
+
+            Random r = new Random();
+            for (int i = 0; i < 4; i++)
+            {
+                temp = ar[(r.Next(0, ar.Length))];
+                pwd += temp;
+            }
+
+            if (captchaGenTextBox.Text != "")
+            {
+                captchaGenTextBox.Text = null;
+            }
+
+            captchaGenTextBox.Text = pwd;
+        }
+        private void loginButton_Click(object sender, RoutedEventArgs e)
+        {
+
+
+            if (captchaGenTextBox.Text != "" && captchaGenTextBox.Text != captchaTextBox.Text)
+            {
+                MessageBox.Show("Блокировка 10 секунд");
+                timer.Start();
+                authorizationLabel.Visibility = Visibility.Hidden;
+                blockLabel.Visibility = Visibility.Visible;
+                loginTextBox.Visibility = Visibility.Hidden;
+                passwordBox.Visibility = Visibility.Hidden;
+                showPassword.Visibility = Visibility.Hidden;
+                passwordTextBox.Visibility = Visibility.Hidden;
+                captchaGenTextBox.Visibility = Visibility.Hidden;
+                captchaTextBox.Visibility = Visibility.Hidden;
+                refreshButton.Visibility = Visibility.Hidden;
+                LoginButton.Visibility = Visibility.Hidden;
+                loginLabel.Visibility = Visibility.Hidden;
+                passwordLabel.Visibility = Visibility.Hidden;
+                captchaLabel.Visibility = Visibility.Hidden;
+            }
+            captchaTextBox.Text = null;
+        }
+        private void showPassword_Click(object sender, RoutedEventArgs e)
+        {
+            if (showPassword.IsChecked == true)
+            {
+                passwordTextBox.Text = passwordBox.Password;
+                passwordTextBox.Visibility = Visibility.Visible;
+                passwordBox.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                passwordBox.Password = passwordTextBox.Text;
+                passwordTextBox.Visibility = Visibility.Hidden;
+                passwordBox.Visibility = Visibility.Visible;
+            }
+
+
+
+
+           
+
+        
+        }
+
+        private void loginButton_Click_1(object sender, RoutedEventArgs e)
+        {
+            string login = "admin";
+            string pass = "123ms";
+            string login1 = "admiun";
+            string pass1 = "1234ms";
+
+
+            if (loginTextBox.Text == login)
+            {
+                if (passwordBox.Password == pass)
+                {
+                    if (captchaTextBox.Text == captchaGenTextBox.Text)
+                    {
+                        Window1 gwin = new Window1();
+                        gwin.Owner = this;
+                        //    gwin.userLabel.Content = loginTextBox.Text;
+                        gwin.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Каптча неверная");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Пароль неверный");
+                    CaptchaGenerator();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Логин неверный");
+                CaptchaGenerator();
+            }
+            if (loginTextBox.Text == login1)
+            {
+                if (passwordBox.Password == pass1)
+                {
+                    if (captchaTextBox.Text == captchaGenTextBox.Text)
+                    {
+                        Window1 gwin = new Window1();
+                        gwin.Owner = this;
+                        //    gwin.userLabel.Content = loginTextBox.Text;
+                        gwin.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Каптча неверная");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Пароль неверный");
+                    CaptchaGenerator();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Логин неверный");
+                CaptchaGenerator();
+            }
+
+        }
+    }
+Button
+private void Button_Click_7(object sender, RoutedEventArgs e)
+        {
+
+            this.Close();
+            kod kd = new kod();
+            kd.Show();
+            this.Hide();
+        }
